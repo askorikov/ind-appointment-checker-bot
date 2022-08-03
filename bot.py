@@ -129,9 +129,9 @@ async def cancel_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def list_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     jobs = context.job_queue.jobs()
     if len(jobs) > 0:
-        response = ['Currently scheduled jobs:']
+        response = ['Currently looking for:']
         for i, job in enumerate(jobs):
-            response.append(f'{i+1}. {job.name}')
+            response.append(f'{i+1}) {job.name}')
         await update.message.reply_text('\n'.join(response))
     else:
         await update.message.reply_text('No jobs scheduled at the moment.')
@@ -142,7 +142,7 @@ async def clear_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     if len(jobs) > 0:
         for job in context.job_queue.jobs():
             job.schedule_removal()
-        await update.message.reply_text(f'{len(jobs)} were removed from the queue.')
+        await update.message.reply_text(f'{len(jobs)} jobs were removed from the queue.')
     else:
         await update.message.reply_text('No jobs scheduled at the moment. Nothing to clear.')
 
