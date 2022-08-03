@@ -191,7 +191,7 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main() -> None:
     token = os.environ['TELEGRAM_BOT_TOKEN']
-    app = ApplicationBuilder().token(token).build()
+    application = ApplicationBuilder().token(token).build()
 
     conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('add', start_dialogue)],
@@ -212,11 +212,18 @@ def main() -> None:
         },
         fallbacks=[CommandHandler('cancel', cancel_dialogue)],
     )
-    app.add_handler(conversation_handler)
-    app.add_handler(CommandHandler('list', list_jobs))
-    app.add_handler(CommandHandler('clear', clear_jobs))
+    application.add_handler(conversation_handler)
+    application.add_handler(CommandHandler('list', list_jobs))
+    application.add_handler(CommandHandler('clear', clear_jobs))
 
-    app.run_polling()
+    port = int(os.environ.get('PORT', '8443'))
+    heroku_app_name = os.environ['HEROKU_APP_NAME']
+    application.run_webhook(
+        listen='0.0.0.0',
+        port=port,
+        url_path=token,
+        webhook_url=f'https://{heroku_app_name}.herokuapp.com/{token}'
+    )
 
 
 if __name__ == '__main__':
