@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 import urllib.request
 from datetime import datetime
 from enum import Enum
@@ -18,6 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+HEROKU = True if '--heroku' in sys.argv else False
 LOCATION_MAPPING = {
     'Amsterdam': 'AM',
     'Den Haag': 'DH',
@@ -187,7 +189,7 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
     before_date = context.job.data['before_date']
     if (earliest_date < before_date):
         await stop_job(message=f'Appointment found on {earliest_date:%d-%m-%Y %H:%M}')
-    else:
+    elif HEROKU:
         # Prevent from sleeping on Heroku free tier
         heroku_app_name = os.environ['HEROKU_APP_NAME']
         urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/')
@@ -220,14 +222,17 @@ def main() -> None:
     application.add_handler(CommandHandler('list', list_jobs))
     application.add_handler(CommandHandler('clear', clear_jobs))
 
-    port = int(os.environ.get('PORT', '8443'))
-    heroku_app_name = os.environ['HEROKU_APP_NAME']
-    application.run_webhook(
-        listen='0.0.0.0',
-        port=port,
-        url_path=token,
-        webhook_url=f'https://{heroku_app_name}.herokuapp.com/{token}'
-    )
+    if HEROKU:
+        port = int(os.environ.get('PORT', '8443'))
+        heroku_app_name = os.environ['HEROKU_APP_NAME']
+        application.run_webhook(
+            listen='0.0.0.0',
+            port=port,
+            url_path=token,
+            webhook_url=f'https://{heroku_app_name}.herokuapp.com/{token}'
+        )
+    else:
+        application.run_polling()
 
 
 if __name__ == '__main__':
