@@ -6,7 +6,7 @@ import urllib.request
 from datetime import datetime
 from enum import Enum
 from typing import Dict
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (ApplicationBuilder, CommandHandler, ContextTypes,
@@ -164,9 +164,11 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Prevent from sleeping on Heroku free tier
     if HEROKU:
-        heroku_app_name = os.environ['HEROKU_APP_NAME']
-        token = os.environ['TELEGRAM_BOT_TOKEN']
-        urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/{token}')
+        try:
+            heroku_app_name = os.environ['HEROKU_APP_NAME']
+            urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/')
+        except HTTPError:
+            pass  # expecting HTTP Error 404
 
     url = context.job.data['url']
     try:
