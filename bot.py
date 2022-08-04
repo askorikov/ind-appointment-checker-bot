@@ -162,6 +162,12 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(context.job.chat_id, message)
         context.job.schedule_removal()
 
+    # Prevent from sleeping on Heroku free tier
+    if HEROKU:
+        heroku_app_name = os.environ['HEROKU_APP_NAME']
+        token = os.environ['TELEGRAM_BOT_TOKEN']
+        urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/{token}')
+
     url = context.job.data['url']
     try:
         with urllib.request.urlopen(url) as web_content:
@@ -189,10 +195,6 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
     before_date = context.job.data['before_date']
     if (earliest_date < before_date):
         await stop_job(message=f'Appointment found on {earliest_date:%d-%m-%Y %H:%M}')
-    elif HEROKU:
-        # Prevent from sleeping on Heroku free tier
-        heroku_app_name = os.environ['HEROKU_APP_NAME']
-        urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/')
 
 
 def main() -> None:
