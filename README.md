@@ -12,7 +12,7 @@ authority of the Netherlands). It was inspired by https://github.com/Iaotle/IND-
 
 ## Setup
 Currently the bot is running as `@IndAppointmentCheckerBot`. It can be
-self-hosted in after creating your own bot with `@BotFather` (see
+self-hosted after creating your own bot with `@BotFather` (see
 https://core.telegram.org/bots) in one of the following ways:
 
 ### Locally
