@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -145,13 +146,18 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(context.job.chat_id, message)
         context.job.schedule_removal()
 
-    # Prevent from sleeping on Heroku free tier
+    # Prevent from sleeping on Heroku free tier by pinging the app periodically
     if HEROKU:
+        heroku_app_name = os.environ['HEROKU_APP_NAME']
+        # Run in executor to not block the asyncio loop that runs the bot
         try:
-            heroku_app_name = os.environ['HEROKU_APP_NAME']
-            urllib.request.urlopen(f'https://{heroku_app_name}.herokuapp.com/')
+            await asyncio.get_event_loop().run_in_executor(
+                None,  # default executor
+                urllib.request.urlopen,
+                f'https://{heroku_app_name}.herokuapp.com/'
+            )
         except HTTPError:
-            pass  # expecting HTTP Error 404
+            pass  # expecting error 404
 
     url = context.job.data['url']
     try:
