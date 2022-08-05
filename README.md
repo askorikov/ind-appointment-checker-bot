@@ -44,4 +44,5 @@ https://core.telegram.org/bots) in one of the following ways:
     ```
 5. The bot will prevent (free-tier) dynos from sleeping by pinging itself
    periodically if any job is running. This may exhaust your free hours limit
-   if jobs are running for too long.
+   if jobs are running for too long. This can be disabled by passing
+   `--no-keep-awake` flag to the bot by changing the `Procfile`.

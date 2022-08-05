@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 HEROKU = True if '--heroku' in sys.argv else False
+NO_KEEP_AWAKE = True if '--no-keep-awake' in sys.argv else False
 LOCATION_MAPPING = {
     'Amsterdam': 'AM',
     'Den Haag': 'DH',
@@ -147,7 +148,7 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
         context.job.schedule_removal()
 
     # Prevent from sleeping on Heroku free tier by pinging the app periodically
-    if HEROKU:
+    if HEROKU and not NO_KEEP_AWAKE:
         heroku_app_name = os.environ['HEROKU_APP_NAME']
         # Run in executor to not block the asyncio loop that runs the bot
         try:
