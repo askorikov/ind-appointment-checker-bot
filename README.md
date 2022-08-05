@@ -1,14 +1,14 @@
 # IND appointment checker bot for Telegram
 This bot allows user to set up one or several jobs that will periodically check
 for appointments of a specified type at a specified IND location (migration
-authority of the Netherlands). It was inspired by https://github.com/Iaotle/IND-Appointment-Check
+authority of the Netherlands). It was inspired by https://github.com/Iaotle/IND-Appointment-Check.
 
 ## Usage
-* /add - Add a new job to watch for an appointment.
-* /cancel - Cancel the current dialogue.
-* /list - List all current jobs.
-* /clear - Remove all current jobs from the queue.
-* /help - Display help message.
+* `/add` - Add a new job to watch for an appointment.
+* `/cancel` - Cancel the current dialogue.
+* `/list` - List all current jobs.
+* `/clear` - Remove all current jobs from the queue.
+* `/help` - Display help message.
 
 ## Setup
 Currently the bot is running as `@IndAppointmentCheckerBot`. It can be
