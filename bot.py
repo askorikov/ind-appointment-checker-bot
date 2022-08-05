@@ -45,10 +45,6 @@ class ResponseType(Enum):
 
 
 async def start_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ResponseType:
-    # reply_markup = InlineKeyboardMarkup(
-    #     [[InlineKeyboardButton(text=k, callback_data=v)] for k, v in LOCATION_MAPPING.items()]
-        # [[InlineKeyboardButton(text=text)] for text in LOCATION_MAPPING]
-    # )
     reply_markup = ReplyKeyboardMarkup([[x] for x in LOCATION_MAPPING],
                                        resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text('Choose location:', reply_markup=reply_markup)
@@ -57,23 +53,14 @@ async def start_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 async def get_appointment_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ResponseType:
     context.user_data['location'] = update.message.text
-    # query = update.callback_query
-    # context.user_data['location'] = query.data
-    # reply_markup = InlineKeyboardMarkup(
-    #     [[InlineKeyboardButton(text=k, callback_data=v)] for k, v in APPOINTMENT_TYPE_MAPPING.items()]
-        # [[InlineKeyboardButton(text=text)] for text in APPOINTMENT_TYPE_MAPPING]
-    # )
     reply_markup = ReplyKeyboardMarkup([[x] for x in APPOINTMENT_TYPE_MAPPING],
                                        resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text('Choose appointment type:', reply_markup=reply_markup)
-    # await query.answer()
-    # await query.edit_message_text('Choose appointment type:', reply_markup=reply_markup)
     return ResponseType.APPOINTMENT_TYPE
 
 
 async def get_num_people(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ResponseType:
     context.user_data['appointment_type'] = update.message.text
-    # reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(str(i + 1))] for i in range(6)])
     reply_markup = ReplyKeyboardMarkup([[str(i + 1)] for i in range(6)],
                                         resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text('Choose number of people:', reply_markup=reply_markup)
@@ -82,14 +69,10 @@ async def get_num_people(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 async def get_before_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ResponseType:
     context.user_data['num_people'] = int(update.message.text)
-    # query = update.callback_query
-    # context.user_data['num_people'] = int(query.data)
     await update.message.reply_text(
         'Date before which to search for an appointment (dd-mm-yyyy):',
         reply_markup=ReplyKeyboardRemove()
     )
-    # await query.answer()
-    # await query.edit_message_text('Date before which to search for an appointment (dd-mm-yyyy):', reply_markup=reply_markup)
     return ResponseType.BEFORE_DATE
 
 
@@ -208,7 +191,6 @@ def main() -> None:
         states={
             ResponseType.LOCATION: [
                 MessageHandler(filters.Text(LOCATION_MAPPING), get_appointment_type)
-                # CallbackQueryHandler(get_appointment_type)
             ],
             ResponseType.APPOINTMENT_TYPE: [
                 MessageHandler(filters.Text(APPOINTMENT_TYPE_MAPPING), get_num_people)
