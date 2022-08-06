@@ -130,7 +130,7 @@ async def cancel_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def list_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    jobs = context.job_queue.jobs()
+    jobs = [x for x in context.job_queue.jobs() if x.chat_id == update.effective_chat.id]
     if len(jobs) > 0:
         response = ['Currently looking for:']
         for i, job in enumerate(jobs):
@@ -141,7 +141,7 @@ async def list_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def clear_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    jobs = context.job_queue.jobs()
+    jobs = [x for x in context.job_queue.jobs() if x.chat_id == update.effective_chat.id]
     if len(jobs) > 0:
         for job in context.job_queue.jobs():
             job.schedule_removal()
