@@ -25,8 +25,6 @@ NO_KEEP_AWAKE = True if '--no-keep-awake' in sys.argv else False
 LOCATION_MAPPING = {
     'Amsterdam': 'AM',
     'Den Haag': 'DH',
-    'Rotterdam': 'RO',
-    'Utrecht': 'UT',
     'Zwolle': 'ZW',
     'Den Bosch': 'DB'
 }
