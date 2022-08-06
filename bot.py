@@ -37,6 +37,11 @@ APPOINTMENT_TYPE_MAPPING = {
     'Return visa': 'TKV'
 }
 DATE_REGEX = '^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])-([1-9]|0[1-9]|1[0-2])-([2-9][0-9][0-9][0-9])$'
+HELP_STRING = ('/add - Add a new job to watch for an appointment.\n'
+               '/cancel - Cancel the current dialogue.\n'
+               '/list - List all current jobs.\n'
+               '/clear - Remove all current jobs from the queue.\n'
+               '/help - Display help message.')
 
 
 class ResponseType(Enum):
@@ -44,6 +49,19 @@ class ResponseType(Enum):
     APPOINTMENT_TYPE = 2
     NUM_PEOPLE = 3
     BEFORE_DATE = 4
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(
+        'This bot allows user to set up one or several jobs that will '
+        'periodically check for appointments of a specified type at a specified '
+        'location of IND (migration authority of the Netherlands).\n\n'
+        + HELP_STRING
+    )
+
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(HELP_STRING)
 
 
 async def start_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ResponseType:
@@ -193,6 +211,8 @@ def main() -> None:
     token = os.environ['TELEGRAM_BOT_TOKEN']
     application = ApplicationBuilder().token(token).build()
 
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('help', help))
     conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('add', start_dialogue)],
         states={
