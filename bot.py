@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Dict
 from urllib.error import URLError, HTTPError
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (ApplicationBuilder, CommandHandler, ContextTypes,
                           ConversationHandler, MessageHandler, filters)
 
@@ -36,7 +36,6 @@ APPOINTMENT_TYPE_MAPPING = {
     'Return visa': 'TKV'
 }
 APPOINTMENT_CHECK_INTERVAL = 10
-DATE_REGEX = '^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])-([1-9]|0[1-9]|1[0-2])-([2-9][0-9][0-9][0-9])$'
 HELP_STRING = ('/add - Add a new job to watch for an appointment.\n'
                '/cancel - Cancel the current dialogue.\n'
                '/list - List all current jobs.\n'
@@ -214,6 +213,15 @@ async def wake_up(context: ContextTypes.DEFAULT_TYPE) -> None:
         context.job_queue.run_once(wake_up, when=KEEP_AWAKE_INTERVAL)
 
 
+class DateFilter(filters.MessageFilter):
+    def filter(self, message: Message) -> bool:
+        try:
+            datetime.strptime(message.text, '%d-%m-%Y')
+            return True
+        except (ValueError, TypeError):
+            return False
+
+
 def main() -> None:
     token = os.environ['TELEGRAM_BOT_TOKEN']
     application = ApplicationBuilder().token(token).build()
@@ -233,7 +241,7 @@ def main() -> None:
                 MessageHandler(filters.Regex('^[1-6]$'), get_before_date)
             ],
             ResponseType.BEFORE_DATE: [
-                MessageHandler(filters.Regex(DATE_REGEX), finish_dialogue)
+                MessageHandler(DateFilter(), finish_dialogue)
             ]
         },
         fallbacks=[CommandHandler('cancel', cancel_dialogue)],
