@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 HEROKU = True if '--heroku' in sys.argv else False
 NO_KEEP_AWAKE = True if '--no-keep-awake' in sys.argv else False
+KEEP_AWAKE_INTERVAL = 29*60
 LOCATION_MAPPING = {
     'Amsterdam': 'AM',
     'Den Haag': 'DH',
@@ -117,6 +118,11 @@ async def finish_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                                     },
                                     name=job_name)
 
+    # Prevent from sleeping on Heroku free tier by pinging the app periodically
+    if (HEROKU and not NO_KEEP_AWAKE
+        and not wake_up in [x.callback for x in context.job_queue.jobs()]):
+        context.job_queue.run_once(wake_up, when=KEEP_AWAKE_INTERVAL)
+
     await update.message.reply_text('Appointment monitor started. You will get '
                                     'a notification if an appointment is found.')
     return ConversationHandler.END
@@ -163,19 +169,6 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(context.job.chat_id, message)
         context.job.schedule_removal()
 
-    # Prevent from sleeping on Heroku free tier by pinging the app periodically
-    if HEROKU and not NO_KEEP_AWAKE:
-        heroku_app_name = os.environ['HEROKU_APP_NAME']
-        # Run in executor to not block the asyncio loop that runs the bot
-        try:
-            await asyncio.get_event_loop().run_in_executor(
-                None,  # default executor
-                urllib.request.urlopen,
-                f'https://{heroku_app_name}.herokuapp.com/'
-            )
-        except HTTPError:
-            pass  # expecting error 404
-
     url = context.job.data['url']
     try:
         with urllib.request.urlopen(url) as web_content:
@@ -203,6 +196,21 @@ async def check_appointment(context: ContextTypes.DEFAULT_TYPE) -> None:
     before_date = context.job.data['before_date']
     if (earliest_date < before_date):
         await stop_job(message=f'Appointment found on {earliest_date:%d-%m-%Y %H:%M}')
+
+
+async def wake_up(context: ContextTypes.DEFAULT_TYPE) -> None:
+    if len(context.job_queue.jobs()) > 0:
+        heroku_app_name = os.environ['HEROKU_APP_NAME']
+        # Run in executor to not block the asyncio loop that runs the bot
+        try:
+            await asyncio.get_event_loop().run_in_executor(
+                None,  # default executor
+                urllib.request.urlopen,
+                f'https://{heroku_app_name}.herokuapp.com/'
+            )
+        except HTTPError:
+            pass  # expecting error 404
+        context.job_queue.run_once(wake_up, when=KEEP_AWAKE_INTERVAL)
 
 
 def main() -> None:
