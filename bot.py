@@ -35,6 +35,7 @@ APPOINTMENT_TYPE_MAPPING = {
     'Residence endorsement sticker': 'VAA',
     'Return visa': 'TKV'
 }
+APPOINTMENT_CHECK_INTERVAL = 10
 DATE_REGEX = '^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])-([1-9]|0[1-9]|1[0-2])-([2-9][0-9][0-9][0-9])$'
 HELP_STRING = ('/add - Add a new job to watch for an appointment.\n'
                '/cancel - Cancel the current dialogue.\n'
@@ -108,7 +109,7 @@ async def finish_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 f'before {context.user_data["before_date"]:%d-%m-%Y}')
     url = get_ind_api_url(context.user_data)
     context.job_queue.run_repeating(check_appointment,
-                                    interval=10,
+                                    interval=APPOINTMENT_CHECK_INTERVAL,
                                     first=0.2,  # run after a short grace time
                                     last=context.user_data['before_date'] - datetime.now(),
                                     chat_id=update.effective_chat.id,
